@@ -36,7 +36,8 @@ class ChannelState {
 class ChannelNotifier extends Notifier<ChannelState> {
   @override
   ChannelState build() {
-    // Schedule fetch after build
+    // Reload channels whenever the selected workspace changes
+    ref.watch(workspaceProvider.select((s) => s.selectedWorkspace?.id));
     Future.microtask(fetchChannels);
     return const ChannelState();
   }
@@ -75,6 +76,8 @@ class ChannelNotifier extends Notifier<ChannelState> {
 
     if (orgId == null || username == null) return false;
 
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
     final repository = ref.read(channelRepositoryProvider);
     final result = await repository.createChannel(
       name: name,
@@ -86,11 +89,17 @@ class ChannelNotifier extends Notifier<ChannelState> {
     );
 
     if (result is Success<Channel>) {
-      state = state.copyWith(channels: [...state.channels, result.value]);
+      state = state.copyWith(
+        isLoading: false,
+        channels: [...state.channels, result.value],
+      );
       return true;
-    } else {
-      return false;
     }
+    state = state.copyWith(
+      isLoading: false,
+      errorMessage: result is Failure<Channel> ? result.error.message : null,
+    );
+    return false;
   }
 
   Future<bool> updateChannelTopicOrDescription({
