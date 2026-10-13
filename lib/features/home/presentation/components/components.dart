@@ -4,4 +4,5 @@ export 'update_status_dialog.dart';
 export 'set_status_dialog.dart';
 export 'emoji_picker_dialog.dart';
 export 'app_sidebar_rail.dart';
+export 'sidebar_popouts.dart';
 export 'top_user_menu.dart';
